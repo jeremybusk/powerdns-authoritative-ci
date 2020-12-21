@@ -18,7 +18,7 @@ export PGPASSWORD="pdns"
 echo "deb [arch=amd64] http://repo.powerdns.com/$ID $VERSION_CODENAME-auth-master main" | sudo tee /etc/apt/sources.list.d/pdns.list
 echo "Package: pdns-*
 Pin: origin repo.powerdns.com
-Pin-Priority: 600" | tee /etc/apt/preferences.d/pdns
+Pin-Priority: 600" | sudo tee /etc/apt/preferences.d/pdns
 sudo apt-get update
 sudo apt install postgresql-12
 curl https://repo.powerdns.com/CBC8B383-pub.asc | sudo apt-key add - &&
