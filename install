@@ -25,6 +25,7 @@ postgres_install () {
   sudo apt-get update
   sudo apt install postgresql-12
   sudo systemctl start postgresql || true
+  # sudo pg_ctlcluster 12 main start
 }
 
 
@@ -43,8 +44,6 @@ Pin-Priority: 600" | sudo tee /etc/apt/preferences.d/pdns
   #   AND pid <> pg_backend_pid()"
   # sudo -i -u postgres psql -c $sql || true
   sudo pkill psql || true
-  # sudo pg_ctlcluster 12 main start
-  # sleep 5
   sudo -i -u postgres psql -c "DROP DATABASE $db_name" || true
   sudo -i -u postgres psql -c "DROP OWNED BY $db_user CASCADE" || true
   sudo -i -u postgres psql -c "DROP ROLE $db_user" || true
@@ -87,11 +86,11 @@ pdns_test () {
 
 
 main () {
-  free_port_53 () {
-  postgres_install ()
-  postgres_test ()
-  pdns_install ()
-  pdns_test ()
+  free_port_53
+  postgres_install
+  postgres_test
+  pdns_install
+  pdns_test
 }
 
 
