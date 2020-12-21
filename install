@@ -35,7 +35,8 @@ sudo systemctl stop pdns
 #   AND pid <> pg_backend_pid()"
 # sudo -i -u postgres psql -c $sql || true
 sudo pkill psql || true
-sudo systemctl start pdns
+sudo systemctl start postgresql || true
+# sudo pg_ctlcluster 12 main start
 sleep 5
 sudo ss -lntp
 sudo -i -u postgres psql -c "DROP DATABASE $db_name" || true
