@@ -37,7 +37,7 @@ sudo -i -u postgres psql -c "DROP ROLE $db_user" || true
 sudo -i -u postgres psql -c "CREATE ROLE $db_user WITH SUPERUSER CREATEDB CREATEROLE LOGIN ENCRYPTED PASSWORD '$db_pass'"
 sudo -i -u postgres psql -c "CREATE DATABASE $db_name OWNER $db_user"
 sudo psql -U pdns password=$db_pass -h 127.0.0.1 pdns < /usr/share/doc/pdns-backend-pgsql/schema.pgsql.sql
-sudo psql -U pdns password=$db_pass -h 127.0.0.1 pdns < /root/luadns.sql
+sudo psql -U pdns password=$db_pass -h 127.0.0.1 pdns < example.com.sql
 
 # cp -p /usr/share/doc/pdns-backend-pgsql/examples/pdns.local.gpgsql.conf  /etc/powerdns/pdns.d/
 echo "enable-lua-records=yes
