@@ -72,7 +72,9 @@ gpgsql-dnssec=yes" | sudo tee /etc/powerdns/pdns.d/pdns.local.gpgsql.conf
 
 
 postgres_test () {
-  sudo ss -lntp | grep 5432 || echo "postgres socket not running"; exit 1
+  # sudo ss -lntp | grep 5432 || echo "postgres socket not running"; exit 1
+  # sudo ss -lntp | grep 5432 || echo "postgres socket not running"; exit 1
+  sudo ss -ln | grep 5432
   sudo systemctl is-active --quiet postgresql
 }
 
