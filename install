@@ -33,6 +33,8 @@ sudo systemctl stop pdns
 # sudo -i -u postgres psql -c $sql || true
 sudo pkill psql || true
 sudo systemctl start pdns
+sleep 5
+sudo ss -lntp
 sudo -i -u postgres psql -c "DROP DATABASE $db_name" || true
 sudo -i -u postgres psql -c "DROP OWNED BY $db_user CASCADE" || true
 sudo -i -u postgres psql -c "DROP ROLE $db_user" || true
