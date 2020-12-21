@@ -35,3 +35,7 @@ jobs:
     - name: Create centos 8 container 
       run: |
               sudo lxc launch images:centos/8 centos8 
+    
+    - name: List containers
+      run: |
+              lxc list 
