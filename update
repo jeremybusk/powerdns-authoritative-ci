@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+set -ex
+# git diff main dev -- example.com.sql
+check_zone_changes () {
+  r=$(git diff origin/main origin/dev -- ./)
+  if [[ "$r" = *diff* ]]; then
+    echo "Changes detected. Update local repo for ${name} with remote."
+    # refresh_scripts "${name}"
+    echo $r
+  fi
+}
+
+check_if_remote_repo_changes() {
+  name=$1
+  local_repo="zabbix-${1}"
+  cd "${local_repo}"
+  git fetch --quiet origin master
+  r=$(git diff origin/master -- ./)
+  if [[ "$r" = *diff* ]]; then
+    echo "Changes detected. Update local repo for ${name} with remote."
+    refresh_scripts "${name}"
+  fi
+  cd ..
+}
+
+refresh_scripts() {
+  name=$1
+  dir="${scripts_dir}/$name"
+  echo "Refreshing ${dir} directory."
+  tmpdir=$(mktemp -d -t zabbix_external.XXXXXXXXXX)
+  # find "${dir}" -mindepth 1 -delete  # deletes all files first
+  git clone "${repo_prefix}${name}.git" "${tmpdir}"
+  rm -rf "${tmpdir}/.git"
+  chmod 0550 -R "${tmpdir}"
+  chmod 0440 "${tmpdir}/README.md" || true
+  chown -R zabbix:zabbix "${tmpdir}"
+  cp -rp "${tmpdir}/"* "${dir}"
+  rm -rf ${tmpdir}
+  echo "Running git pull to update repo."
+  git pull # Update local repo with remote
+  echo "Success! Completed refresh of ${dir} directory."
+}
+
+check_zone_changes

@@ -3,7 +3,7 @@ name: CI
 on: [push]
 
 jobs:
-  build:
+  build and test:
 
     runs-on: ubuntu-latest
 
@@ -13,3 +13,13 @@ jobs:
         run: ./before-script
       - name: Pre deploy test install
         run: ./install
+  deploy updates:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v1
+      - name: Run before
+        run: ./before-script
+      - name: Deploy updates and test 
+        run: ./update
