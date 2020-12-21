@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 set -ex
 
-systemctl stop systemd-resolved
+sudo systemctl stop systemd-resolved
 touch /etc/dnsmasq.hosts
-systemctl disable systemd-resolved
-systemctl mask systemd-resolved
+sudo systemctl disable systemd-resolved
+sudo systemctl mask systemd-resolved
 rm /etc/resolv.conf
 # sed -i 's/nameserver.*/nameserver 8.8.8.8/' /etc/resolv.conf
 echo "nameserver 8.8.8.8" > /etc/resolv.conf
@@ -24,7 +24,7 @@ sudo apt install postgresql-12
 curl https://repo.powerdns.com/CBC8B383-pub.asc | sudo apt-key add - &&
   sudo apt-get update &&
   sudo apt-get install -y pdns-server pdns-backend-pgsql
-systemctl stop pdns
+sudo systemctl stop pdns
 # sql="SELECT pg_terminate_backend(pg_stat_activity.pid)
 # FROM pg_stat_activity
 # WHERE pg_stat_activity.datname = '$db_name' --  change this to your DB
