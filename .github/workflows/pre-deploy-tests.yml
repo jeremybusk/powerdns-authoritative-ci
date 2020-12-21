@@ -1,0 +1,14 @@
+name: CI
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Run before
+        run: ./before-script
+      - name: Pre deploy test install
+        run: ./install
