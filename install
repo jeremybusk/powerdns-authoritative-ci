@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+set -ex
+
+systemctl stop systemd-resolved
+touch /etc/dnsmasq.hosts
+systemctl disable systemd-resolved
+systemctl mask systemd-resolved
+rm /etc/resolv.conf
+# sed -i 's/nameserver.*/nameserver 8.8.8.8/' /etc/resolv.conf
+echo "nameserver 8.8.8.8" > /etc/resolv.conf
+
+
+db_name=pdns
+db_user=pdns
+db_pass=pdns
+export PGPASSWORD="pdns"
+. /etc/os-release
+echo "deb [arch=amd64] http://repo.powerdns.com/$ID $VERSION_CODENAME-auth-master main" > /etc/apt/sources.list.d/pdns.list
+echo "Package: pdns-*
+Pin: origin repo.powerdns.com
+Pin-Priority: 600" > /etc/apt/preferences.d/pdns
+sudo apt-get update
+sudo apt install postgresql-12
+curl https://repo.powerdns.com/CBC8B383-pub.asc | sudo apt-key add - &&
+  sudo apt-get update &&
+  sudo apt-get install -y pdns-server pdns-backend-pgsql
+systemctl stop pdns
+# sql="SELECT pg_terminate_backend(pg_stat_activity.pid)
+# FROM pg_stat_activity
+# WHERE pg_stat_activity.datname = '$db_name' --  change this to your DB
+#   AND pid <> pg_backend_pid()"
+# sudo -i -u postgres psql -c $sql || true
+sudo pkill psql || true
+sudo -i -u postgres psql -c "DROP DATABASE $db_name" || true
+sudo -i -u postgres psql -c "DROP OWNED BY $db_user CASCADE" || true
+sudo -i -u postgres psql -c "DROP ROLE $db_user" || true
+sudo -i -u postgres psql -c "CREATE ROLE $db_user WITH SUPERUSER CREATEDB CREATEROLE LOGIN ENCRYPTED PASSWORD '$db_pass'"
+sudo -i -u postgres psql -c "CREATE DATABASE $db_name OWNER $db_user"
+sudo psql -U pdns password=$db_pass -h 127.0.0.1 pdns < /usr/share/doc/pdns-backend-pgsql/schema.pgsql.sql
+sudo psql -U pdns password=$db_pass -h 127.0.0.1 pdns < /root/luadns.sql
+
+# cp -p /usr/share/doc/pdns-backend-pgsql/examples/pdns.local.gpgsql.conf  /etc/powerdns/pdns.d/
+echo "enable-lua-records=yes
+# PostgreSQL Configuration
+#
+# Launch gpgsql backend
+launch+=gpgsql
+
+# gpgsql parameters
+gpgsql-host=127.0.0.1
+gpgsql-port=5432
+gpgsql-dbname=pdns
+gpgsql-user=pdns
+gpgsql-password=pdns
+gpgsql-dnssec=yes" > /etc/powerdns/pdns.d/pdns.local.gpgsql.conf
+
+systemctl start pdns
+systemctl is-active --quiet pdns
+systemctl is-active --quiet postgresql
+
+dig +short www.example.com @127.0.0.1
+dig +short pickclosest.example.com @127.0.0.1
+dig +short ifportup.example.com @127.0.0.1
