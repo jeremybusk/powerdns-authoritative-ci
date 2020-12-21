@@ -1,54 +1,60 @@
 #!/usr/bin/env bash
 set -ex
-
-sudo systemctl stop systemd-resolved
-# sudo touch /etc/dnsmasq.hosts
-sudo systemctl disable systemd-resolved
-sudo systemctl mask systemd-resolved
-sudo rm /etc/resolv.conf
-# sed -i 's/nameserver.*/nameserver 8.8.8.8/' /etc/resolv.conf
-echo "nameserver 8.8.8.8" | sudo tee /etc/resolv.conf
-host yahoo.com
-# cat /etc/hosts
-# echo "127.0.0.1    localhost.localdomain localhost" | sudo tee /etc/hosts
-
-
+. /etc/os-release
+export PGPASSWORD="pdns"
 db_name=pdns
 db_user=pdns
 db_pass=pdns
-export PGPASSWORD="pdns"
-. /etc/os-release
-sudo apt-get update
-sudo apt install postgresql-12
 
-echo "deb [arch=amd64] http://repo.powerdns.com/$ID $VERSION_CODENAME-auth-master main" | sudo tee /etc/apt/sources.list.d/pdns.list
-echo "Package: pdns-*
+
+free_port_53 () {
+  sudo systemctl stop systemd-resolved
+  # sudo touch /etc/dnsmasq.hosts
+  sudo systemctl disable systemd-resolved
+  sudo systemctl mask systemd-resolved
+  sudo rm /etc/resolv.conf
+  # sed -i 's/nameserver.*/nameserver 8.8.8.8/' /etc/resolv.conf
+  echo "nameserver 8.8.8.8" | sudo tee /etc/resolv.conf
+  host microsoft.com
+  # cat /etc/hosts
+  # echo "127.0.0.1    localhost.localdomain localhost" | sudo tee /etc/hosts
+}
+
+
+postgres_install () {
+  sudo apt-get update
+  sudo apt install postgresql-12
+  sudo systemctl start postgresql || true
+}
+
+
+pdns_install () {
+  echo "deb [arch=amd64] http://repo.powerdns.com/$ID $VERSION_CODENAME-auth-master main" | sudo tee /etc/apt/sources.list.d/pdns.list
+  echo "Package: pdns-*
 Pin: origin repo.powerdns.com
 Pin-Priority: 600" | sudo tee /etc/apt/preferences.d/pdns
-curl https://repo.powerdns.com/CBC8B383-pub.asc | sudo apt-key add - &&
-  sudo apt-get update &&
-  sudo apt-get install -y pdns-server pdns-backend-pgsql
-sudo systemctl stop pdns
-# sql="SELECT pg_terminate_backend(pg_stat_activity.pid)
-# FROM pg_stat_activity
-# WHERE pg_stat_activity.datname = '$db_name' --  change this to your DB
-#   AND pid <> pg_backend_pid()"
-# sudo -i -u postgres psql -c $sql || true
-sudo pkill psql || true
-sudo systemctl start postgresql || true
-# sudo pg_ctlcluster 12 main start
-sleep 5
-sudo ss -lntp
-sudo -i -u postgres psql -c "DROP DATABASE $db_name" || true
-sudo -i -u postgres psql -c "DROP OWNED BY $db_user CASCADE" || true
-sudo -i -u postgres psql -c "DROP ROLE $db_user" || true
-sudo -i -u postgres psql -c "CREATE ROLE $db_user WITH SUPERUSER CREATEDB CREATEROLE LOGIN ENCRYPTED PASSWORD '$db_pass'"
-sudo -i -u postgres psql -c "CREATE DATABASE $db_name OWNER $db_user"
-sudo psql -U pdns password=$db_pass -h 127.0.0.1 pdns < /usr/share/doc/pdns-backend-pgsql/schema.pgsql.sql
-sudo psql -U pdns password=$db_pass -h 127.0.0.1 pdns < example.com.sql
+  curl https://repo.powerdns.com/CBC8B383-pub.asc | sudo apt-key add - &&
+    sudo apt-get update &&
+    sudo apt-get install -y pdns-server pdns-backend-pgsql
+  sudo systemctl stop pdns
+  # sql="SELECT pg_terminate_backend(pg_stat_activity.pid)
+  # FROM pg_stat_activity
+  # WHERE pg_stat_activity.datname = '$db_name' --  change this to your DB
+  #   AND pid <> pg_backend_pid()"
+  # sudo -i -u postgres psql -c $sql || true
+  sudo pkill psql || true
+  # sudo pg_ctlcluster 12 main start
+  # sleep 5
+  sudo -i -u postgres psql -c "DROP DATABASE $db_name" || true
+  sudo -i -u postgres psql -c "DROP OWNED BY $db_user CASCADE" || true
+  sudo -i -u postgres psql -c "DROP ROLE $db_user" || true
+  sudo -i -u postgres psql -c "CREATE ROLE $db_user WITH SUPERUSER CREATEDB CREATEROLE LOGIN ENCRYPTED PASSWORD '$db_pass'"
+  sudo -i -u postgres psql -c "CREATE DATABASE $db_name OWNER $db_user"
+  sudo psql -U pdns password=$db_pass -h 127.0.0.1 pdns < /usr/share/doc/pdns-backend-pgsql/schema.pgsql.sql
+  sudo psql -U pdns password=$db_pass -h 127.0.0.1 pdns < example.com.sql
 
-# cp -p /usr/share/doc/pdns-backend-pgsql/examples/pdns.local.gpgsql.conf  /etc/powerdns/pdns.d/
-echo "enable-lua-records=yes
+  # cp -p /usr/share/doc/pdns-backend-pgsql/examples/pdns.local.gpgsql.conf  /etc/powerdns/pdns.d/
+  echo "enable-lua-records=yes
 # PostgreSQL Configuration
 #
 # Launch gpgsql backend
@@ -62,10 +68,31 @@ gpgsql-user=pdns
 gpgsql-password=pdns
 gpgsql-dnssec=yes" | sudo tee /etc/powerdns/pdns.d/pdns.local.gpgsql.conf
 
-sudo systemctl start pdns
-sudo systemctl is-active --quiet pdns
-sudo systemctl is-active --quiet postgresql
+  sudo systemctl start pdns
+}
 
-dig +short www.example.com @127.0.0.1
-dig +short pickclosest.example.com @127.0.0.1
-dig +short ifportup.example.com @127.0.0.1
+
+postgres_test () {
+  sudo ss -lntp | grep 5432 || echo "postgres socket not running"; exit 1
+  sudo systemctl is-active --quiet postgresql
+}
+
+
+pdns_test () {
+  sudo systemctl is-active --quiet pdns
+  dig +short www.example.com @127.0.0.1
+  dig +short pickclosest.example.com @127.0.0.1
+  dig +short ifportup.example.com @127.0.0.1
+}
+
+
+main () {
+  free_port_53 () {
+  postgres_install ()
+  postgres_test ()
+  pdns_install ()
+  pdns_test ()
+}
+
+
+main
