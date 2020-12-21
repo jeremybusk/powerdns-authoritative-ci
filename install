@@ -15,10 +15,10 @@ db_user=pdns
 db_pass=pdns
 export PGPASSWORD="pdns"
 . /etc/os-release
-echo "deb [arch=amd64] http://repo.powerdns.com/$ID $VERSION_CODENAME-auth-master main" > /etc/apt/sources.list.d/pdns.list
+echo "deb [arch=amd64] http://repo.powerdns.com/$ID $VERSION_CODENAME-auth-master main" | sudo tee /etc/apt/sources.list.d/pdns.list
 echo "Package: pdns-*
 Pin: origin repo.powerdns.com
-Pin-Priority: 600" > /etc/apt/preferences.d/pdns
+Pin-Priority: 600" | tee /etc/apt/preferences.d/pdns
 sudo apt-get update
 sudo apt install postgresql-12
 curl https://repo.powerdns.com/CBC8B383-pub.asc | sudo apt-key add - &&
@@ -40,7 +40,7 @@ sudo psql -U pdns password=$db_pass -h 127.0.0.1 pdns < /usr/share/doc/pdns-back
 sudo psql -U pdns password=$db_pass -h 127.0.0.1 pdns < example.com.sql
 
 # cp -p /usr/share/doc/pdns-backend-pgsql/examples/pdns.local.gpgsql.conf  /etc/powerdns/pdns.d/
-sudo echo "enable-lua-records=yes
+echo "enable-lua-records=yes
 # PostgreSQL Configuration
 #
 # Launch gpgsql backend
@@ -52,7 +52,7 @@ gpgsql-port=5432
 gpgsql-dbname=pdns
 gpgsql-user=pdns
 gpgsql-password=pdns
-gpgsql-dnssec=yes" > /etc/powerdns/pdns.d/pdns.local.gpgsql.conf
+gpgsql-dnssec=yes" | sudo tee /etc/powerdns/pdns.d/pdns.local.gpgsql.conf
 
 sudo systemctl start pdns
 sudo systemctl is-active --quiet pdns
