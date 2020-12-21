@@ -31,14 +31,13 @@ VALUES (
           600
 );
 
-
 INSERT INTO records (domain_id, name, type, content, ttl)
 VALUES (
           1,
           'ifurlup.example.com',
           'LUA',
-        'A "ifurlup(''https://www.uvoo.io/'', {''192.168.1.1'', ''192.168.1.2''})"',
-        600
+          'A "ifurlup(''https://www.uvoo.io/'', {''192.168.1.1'', ''192.168.1.2''})"',
+          600
 );
 
 INSERT INTO records (domain_id, name, type, content, ttl)
@@ -46,7 +45,7 @@ VALUES (
           1,
           'ifportup.example.com',
           'LUA',
-        'A "ifportup(''443'', {''10.64.7.62'', ''172.217.164.4''})"',
-        -- 'A "ifportup(''443'', {''10.64.7.62'', ''10.64.7.63''})"',
-        600
+          'A "ifportup(''443'', {''10.64.7.62'', ''172.217.164.4''})"',
+          -- 'A "ifportup(''443'', {''10.64.7.62'', ''10.64.7.63''})"',
+          600
 );

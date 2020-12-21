@@ -1,6 +1,7 @@
 name: LXD using sudo
 
 
+# sudo snap install lxd --channel=4.0/stable
 
 on: [push]
 
@@ -13,8 +14,7 @@ jobs:
 
     - name: Install LXD
       run: |
-              # sudo snap install lxd --channel=3.0/stable
-        sudo snap install lxd --channel=4.0/stable
+        sudo snap install lxd --channel=3.0/stable
 
     - name: Add current user to LXD group
       run: |
@@ -34,4 +34,4 @@ jobs:
     
     - name: Create centos 8 container 
       run: |
-              sudo lxc launch images:centos:8 centos8 
+              sudo lxc launch images:centos/8 centos8 
