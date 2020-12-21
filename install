@@ -9,7 +9,6 @@ db_pass=pdns
 
 free_port_53 () {
   sudo systemctl stop systemd-resolved
-  # sudo touch /etc/dnsmasq.hosts
   sudo systemctl disable systemd-resolved
   sudo systemctl mask systemd-resolved
   sudo rm /etc/resolv.conf
