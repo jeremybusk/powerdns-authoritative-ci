@@ -14,6 +14,8 @@ INSERT INTO records (domain_id, name, content, type,ttl,prio)
 VALUES (1,'localhost.example.com','127.0.0.1','A',120,NULL);
 INSERT INTO records (domain_id, name, content, type,ttl,prio)
 VALUES (1,'example.com','mail.example.com','MX',120,25);
+INSERT INTO records (domain_id, name, content, type,ttl,prio)
+VALUES (1,'example.com','new.example.com','MX',120,25);
 
 
 -- Enable Lua records for the zone (if not enabled globally)
