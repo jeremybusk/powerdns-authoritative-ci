@@ -7,7 +7,7 @@ sudo systemctl disable systemd-resolved
 sudo systemctl mask systemd-resolved
 sudo rm /etc/resolv.conf
 # sed -i 's/nameserver.*/nameserver 8.8.8.8/' /etc/resolv.conf
-sudo echo "nameserver 8.8.8.8" > /etc/resolv.conf
+echo "nameserver 8.8.8.8" | sudo tee /etc/resolv.conf
 
 
 db_name=pdns
