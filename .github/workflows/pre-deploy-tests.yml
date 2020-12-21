@@ -12,6 +12,7 @@ jobs:
       - name: Pre deploy test install
         run: ./install
   deploy_updates:
+    runs-on: ubuntu-latest
     needs: [build_and_test]
     steps:
       - uses: actions/checkout@v1
