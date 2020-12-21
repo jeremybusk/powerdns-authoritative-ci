@@ -2,12 +2,12 @@
 set -ex
 
 sudo systemctl stop systemd-resolved
-touch /etc/dnsmasq.hosts
+sudo touch /etc/dnsmasq.hosts
 sudo systemctl disable systemd-resolved
 sudo systemctl mask systemd-resolved
-rm /etc/resolv.conf
+sudo rm /etc/resolv.conf
 # sed -i 's/nameserver.*/nameserver 8.8.8.8/' /etc/resolv.conf
-echo "nameserver 8.8.8.8" > /etc/resolv.conf
+sudo echo "nameserver 8.8.8.8" > /etc/resolv.conf
 
 
 db_name=pdns
@@ -40,7 +40,7 @@ sudo psql -U pdns password=$db_pass -h 127.0.0.1 pdns < /usr/share/doc/pdns-back
 sudo psql -U pdns password=$db_pass -h 127.0.0.1 pdns < example.com.sql
 
 # cp -p /usr/share/doc/pdns-backend-pgsql/examples/pdns.local.gpgsql.conf  /etc/powerdns/pdns.d/
-echo "enable-lua-records=yes
+sudo echo "enable-lua-records=yes
 # PostgreSQL Configuration
 #
 # Launch gpgsql backend
@@ -54,9 +54,9 @@ gpgsql-user=pdns
 gpgsql-password=pdns
 gpgsql-dnssec=yes" > /etc/powerdns/pdns.d/pdns.local.gpgsql.conf
 
-systemctl start pdns
-systemctl is-active --quiet pdns
-systemctl is-active --quiet postgresql
+sudo systemctl start pdns
+sudo systemctl is-active --quiet pdns
+sudo systemctl is-active --quiet postgresql
 
 dig +short www.example.com @127.0.0.1
 dig +short pickclosest.example.com @127.0.0.1
